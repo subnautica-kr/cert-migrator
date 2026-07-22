@@ -109,8 +109,8 @@ $script:DefaultRulesJson = @'
     "백업파일이름": "인증서백업_{컴퓨터명}_{날짜}.zip"
   },
   "업데이트": {
-    "_설명": "확인URL은 GitHub에 올린 version.json의 raw 주소. 비워두면 업데이트 확인을 하지 않음. 예: https://raw.githubusercontent.com/OWNER/REPO/main/version.json",
-    "확인URL": ""
+    "_설명": "확인URL은 GitHub에 올린 version.json의 raw 주소. 비워두면 업데이트 확인을 하지 않음.",
+    "확인URL": "https://raw.githubusercontent.com/subnautica-kr/cert-migrator/main/version.json"
   }
 }
 '@
@@ -1011,7 +1011,7 @@ foreach ($p in @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe
     if ($p -and (Test-Path -LiteralPath $p)) { $edge = $p; break }
 }
 if ($edge) {
-    Start-Process $edge ("--app=$url --window-size=1000,880")
+    Start-Process $edge ("--app=$url --window-size=720,760")
     Write-Log "Edge 앱모드로 UI 실행"
 } else {
     Start-Process $url
