@@ -1,0 +1,11 @@
+# 실행 중 생성되는 것 (배포·저장소에 넣지 않음)
+logs/
+백업/
+app/memos.json
+
+# 경상남도교육청 공식 로고(개인이 넣는 경우) - 저작권 별개
+app/ui/assets/org-logo.png
+
+# 진단/임시
+진단결과.txt
+*.tmp

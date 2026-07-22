@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="subnautica">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22D3EE"/>
+      <stop offset="0.55" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#0B4A6F"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#CBD5E1"/>
+    </linearGradient>
+  </defs>
+  <!-- 심해 원형 배지 -->
+  <circle cx="60" cy="60" r="56" fill="url(#sea)"/>
+  <circle cx="60" cy="60" r="56" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2"/>
+  <!-- 음파(소나) 링 -->
+  <g fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="2">
+    <path d="M84 40a34 34 0 0 1 0 40"/>
+    <path d="M92 34a46 46 0 0 1 0 52"/>
+  </g>
+  <!-- 잠수함 본체 -->
+  <g>
+    <ellipse cx="55" cy="66" rx="34" ry="16" fill="url(#metal)"/>
+    <ellipse cx="55" cy="66" rx="34" ry="16" fill="none" stroke="#0B4A6F" stroke-opacity="0.25" stroke-width="1.5"/>
+    <!-- 창문 -->
+    <circle cx="42" cy="66" r="5" fill="#0EA5E9"/>
+    <circle cx="57" cy="66" r="5" fill="#0EA5E9"/>
+    <circle cx="72" cy="66" r="5" fill="#0EA5E9"/>
+    <!-- 함교(세일) + 잠망경 -->
+    <path d="M46 52h18a4 4 0 0 1 4 4v6H42v-6a4 4 0 0 1 4-4z" fill="url(#metal)"/>
+    <rect x="53" y="38" width="5" height="16" rx="2.5" fill="url(#metal)"/>
+    <rect x="55.5" y="40" width="9" height="4" rx="2" fill="url(#metal)"/>
+    <!-- 프로펠러 -->
+    <g stroke="#0B4A6F" stroke-width="3" stroke-linecap="round" opacity="0.8">
+      <line x1="20" y1="60" x2="20" y2="72"/>
+      <line x1="16" y1="63" x2="24" y2="69"/>
+    </g>
+  </g>
+  <!-- 상승 기포 -->
+  <g fill="#ffffff" fill-opacity="0.85">
+    <circle cx="80" cy="44" r="3"/>
+    <circle cx="88" cy="34" r="2"/>
+    <circle cx="84" cy="26" r="1.4"/>
+  </g>
+</svg>

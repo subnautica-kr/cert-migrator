@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인증서 이사 도우미</title>
+<link rel="icon" href="data:image/x-icon;base64,AAABAAEAQEAQAAAAAABoCgAAFgAAACgAAABAAAAAgAAAAAEABAAAAAAAAAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAACAAAAAgIAAgAAAAIAAgACAgAAAgICAAMDAwAAAAP8AAP8AAAD//wD/AAAA/wD/AP//AAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEbMzMzMzMzGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAARszMzMzMzMzMzMZAAAAAAAAAAAAAAAAAAAAAAAAAAEzMzMzMzMzMzMzMzMxAAAAAAAAAAAAAAAAAAAAAAABGzMzMzMzMzMzMzMzMzMZAAAAAAAAAAAAAAAAAAAAABszMzMzMzMzMzMzMzMzMzMZAAAAAAAAAAAAAAAAAAATMzMzMzMzMzMzMzMzMzMzMzMQAAAAAAAAAAAAAAAAATMzMzMzMzMzMzMzMzMzMzMzMzGAAAAAAAAAAAAAAAAbMzMzMzMzMzMzMzMzMzMzMzMzMxgAAAAAAAAAAAAAAbMzMzMzMzMzMzMzMzMzMzMzMzMzMYAAAAAAAAAAAAAbMzMzMzMzMzMzMzMzMzMzMzMzMzMzGAAAAAAAAAAAATMzMzMzMzMzMzMzMzMzMzMzMzMzMzMxgAAAAAAAAAATMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMQAAAAAAAAADMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzEAAAAAAAABszMzMzMzMzMzHj4fMzMzMzMzMzMzMzMzMYAAAAAAABMzMzMzMzMzMzI///4zMzMzMzMzMzMzMzMzEAAAAAAAGzMzMzMzMzMzI////+MzMzMzMzMzMzMzMzMYAAAAAAEzMzMzMzMzMzI//////bMzMzMzMzMzMzMzMzEAAAAAAbMzMzMzMzMzI///////2zMzMzMzMzMzMzMzMwAAAAATMzMzMzMzMzI////////jMzMzMzMzMzMzMzMzEAAAABMzMzMzMzMzI/////////4zMzMzMzMzMzMzMzMYAAAAGzMzMzMzMzI//////////+MzMzMzMzMzMzMzMzAAAAAzMzMzMzMzI////////////fMzMzMzMzMzMzMzMQAAATMzMzMzMzI/////////////2zMzMzMzMzMzMzMxgAABszMzMzMzI///////4///////MzMzMzMzMzMzMzMAAAGzMzMzMzH///////3yP/////4zMzMzMzMzMzMzMwAAAzMzMzMzM///////3zM//////+MzMzMzMzMzMzMzAAADMzMzMzMj//////3zMxv//////jMzMzMzMzMzMzMAAAMzMzMzMyP/////3zMzMf//////3zMzMzMzMzMzMxAAEzMzMzMzH/////3zMzMzI//////9szMzMzMzMzMzEAATMzMzMzMyP///3zMzMzMyP//////zMzMzMzMzMzMQABMzMzMzMzGj//3zMzMzMzMj/////+MzMzMzMzMzMxAAAzMzMzMzMzHd8zMzMzMzMxv//////jMzMzMzMzMzEAADMzMzMzMzMzMzMzMzMzMzMb//////4zMzMzMzMzMAAAMzMzMzMzMzMzMzMzMzMzMzH//////98zMzMzMzMwAAAbMzMzMzMzMzMzMzMzMzMzMyP//////bMzMzMzMzAAABszMzMzMzMzMzMzMzMzMzMzMj/////+MzMzMzMzGAAAEzMzMzMzMzMzMzMzMzMzMzMzI//////jMzMzMzMQAAADMzMzMzMzMzMzMzMzMzMzMzMb//////4zMzMzMxAAAAGzMzMzMzMzMzMzMzMzMzMzMzH//////9szMzMzAAAAATMzMzMzMzMzMzMzMzMzMzMzMyP/////4zMzMzGAAAAAMzMzMzMzMzMzMzMzMzMzMzMzMj/////jMzMzMQAAAAAbMzMzMzMzMzMzMzMzMzMzMzMzI////+MzMzMYAAAAABMzMzMzMzMzMzMzMzMzMzMzMzMz////8zMzMxAAAAAAAbMzMzMzMzMzMzMzMzMzMzMzMzGj//2zMzMxgAAAAAAAMzMzMzMzMzMzMzMzMzMzMzMzMzGd8zMzMzEAAAAAAAAbMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzGAAAAAAAAAGzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMAAAAAAAAAADMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMQAAAAAAAAAAEzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMQAAAAAAAAAAABMzMzMzMzMzMzMzMzMzMzMzMzMzMzMYAAAAAAAAAAAAATMzMzMzMzMzMzMzMzMzMzMzMzMzMYAAAAAAAAAAAAAAEzMzMzMzMzMzMzMzMzMzMzMzMzMYAAAAAAAAAAAAAAABMzMzMzMzMzMzMzMzMzMzMzMzMQAAAAAAAAAAAAAAAAABszMzMzMzMzMzMzMzMzMzMzMQAAAAAAAAAAAAAAAAAAATMzMzMzMzMzMzMzMzMzMzGAAAAAAAAAAAAAAAAAAAAAAbMzMzMzMzMzMzMzMzMxgAAAAAAAAAAAAAAAAAAAAAAAAbMzMzMzMzMzMzMzMZAAAAAAAAAAAAAAAAAAAAAAAAAAARszMzMzMzMzMxkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGbMzMzMxmQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////////////////////4AH///////4AAD//////+AAAB//////gAAAD/////4AAAAD////+AAAAAD////wAAAAAH///+AAAAAAP///wAAAAAAf//+AAAAAAA///wAAAAAAB//+AAAAAAAD//wAAAAAAAH//AAAAAAAAf/4AAAAAAAA//gAAAAAAAD/8AAAAAAAAH/wAAAAAAAAf+AAAAAAAAA/4AAAAAAAAD/gAAAAAAAAH8AAAAAAAAAfwAAAAAAAAB/AAAAAAAAAH8AAAAAAAAAPgAAAAAAAAA+AAAAAAAAAD4AAAAAAAAAPgAAAAAAAAA+AAAAAAAAAD4AAAAAAAAAPgAAAAAAAAA+AAAAAAAAAD4AAAAAAAAAPwAAAAAAAAA/AAAAAAAAAH8AAAAAAAAAfwAAAAAAAAB/gAAAAAAAAP+AAAAAAAAA/4AAAAAAAAD/wAAAAAAAAf/AAAAAAAAB/+AAAAAAAAP/4AAAAAAAA//wAAAAAAAH//gAAAAAAA///AAAAAAAD//8AAAAAAAf//4AAAAAAD///wAAAAAAf///gAAAAAD////gAAAAAf////AAAAAH////+AAAAA/////+AAAAP/////+AAAD///////AAB////////wB////////////////////////////////////w==">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- ===== 홈 ===== -->
+<section id="view-home" class="view">
+  <div class="wrap">
+    <header class="home-head">
+      <div class="logo">🔐</div>
+      <h1>인증서 이사 도우미</h1>
+      <p id="home-status" class="muted">인증서를 찾는 중이에요…</p>
+    </header>
+
+    <nav class="menu">
+      <button class="menu-card" data-go="backup">
+        <span class="mc-emoji">📦</span>
+        <span class="mc-text">
+          <span class="mc-title">인증서 가져가기</span>
+          <span class="mc-sub">이 컴퓨터의 인증서를 백업해서 다른 컴퓨터로</span>
+        </span>
+        <span class="mc-arrow">›</span>
+      </button>
+      <button class="menu-card" data-go="install">
+        <span class="mc-emoji">📥</span>
+        <span class="mc-text">
+          <span class="mc-title">인증서 설치하기</span>
+          <span class="mc-sub">받아온 백업을 이 컴퓨터에 넣기</span>
+        </span>
+        <span class="mc-arrow">›</span>
+      </button>
+      <button class="menu-card" data-go="clean">
+        <span class="mc-emoji">🧹</span>
+        <span class="mc-text">
+          <span class="mc-title">정리하기</span>
+          <span class="mc-sub">잡동사니·만료 인증서를 휴지통으로</span>
+          <span class="mc-badge" id="clean-count" hidden></span>
+        </span>
+        <span class="mc-arrow">›</span>
+      </button>
+    </nav>
+
+    <footer class="home-foot">
+      <button class="link" data-go="rules">⚙ 규칙 설정</button>
+      <span class="dot">·</span>
+      <button class="link" data-go="log">📋 로그</button>
+      <span class="dot">·</span>
+      <button class="link" data-go="about">ℹ 정보</button>
+      <span class="dot">·</span>
+      <button class="link" id="ver"></button>
+    </footer>
+  </div>
+</section>
+
+<!-- ===== 가져가기(백업) ===== -->
+<section id="view-backup" class="view" hidden>
+  <div class="wrap">
+    <header class="top"><button class="back" data-go="home">‹</button><h2>📦 인증서 가져가기</h2></header>
+    <p class="guide">가져갈 인증서를 누르고 아래 파란 버튼을 누르세요.<br>백업은 프로그램 옆 <b>[백업]</b> 폴더에 저장돼요. USB에서 실행했다면 이미 USB 안이에요.</p>
+    <div class="row-select-all"><label><input type="checkbox" id="chk-all-backup"> 전체 선택</label>
+      <button class="link" id="btn-rescan">🔄 다시 검색</button></div>
+    <div id="list-certs" class="list"></div>
+    <div class="cta-space"></div>
+  </div>
+  <div class="cta-bar"><button id="btn-export" class="cta blue">백업 만들기</button></div>
+</section>
+
+<!-- ===== 설치 ===== -->
+<section id="view-install" class="view" hidden>
+  <div class="wrap">
+    <header class="top"><button class="back" data-go="home">‹</button><h2>📥 인증서 설치하기</h2></header>
+    <p class="guide">프로그램 옆 <b>[백업]</b> 폴더의 백업을 자동으로 찾았어요.<br>내용을 확인하고 아래 초록 버튼을 누르세요.</p>
+    <div id="list-backups" class="list"></div>
+    <div class="row-center">
+      <button class="link" id="btn-pickzip">💻 다른 위치의 파일 선택…</button>
+    </div>
+    <div id="preview-box" hidden>
+      <h3 class="sub-h">이 백업에 든 인증서</h3>
+      <div id="list-preview" class="list"></div>
+    </div>
+    <div class="cta-space"></div>
+  </div>
+  <div class="cta-bar"><button id="btn-install" class="cta green" disabled>이 컴퓨터에 설치</button></div>
+</section>
+
+<!-- ===== 정리 ===== -->
+<section id="view-clean" class="view" hidden>
+  <div class="wrap">
+    <header class="top"><button class="back" data-go="home">‹</button><h2>🧹 정리하기</h2></header>
+    <p class="guide">인증서 폴더 속 잡동사니와 만료·중복 인증서를 찾았어요.<br><b>휴지통으로 보내므로</b> 실수해도 휴지통에서 되살릴 수 있어요.</p>
+    <div class="row-select-all"><label><input type="checkbox" id="chk-all-clean"> 전체 선택</label></div>
+    <div id="list-clean" class="list"></div>
+    <div class="cta-space"></div>
+  </div>
+  <div class="cta-bar"><button id="btn-clean" class="cta orange">선택한 항목 휴지통으로</button></div>
+</section>
+
+<!-- ===== 규칙 ===== -->
+<section id="view-rules" class="view" hidden>
+  <div class="wrap">
+    <header class="top"><button class="back" data-go="home">‹</button><h2>⚙ 규칙 설정 <span class="tag-admin">관리자용</span></h2></header>
+    <p class="guide">인증서를 찾는 위치·파일 구조·잡파일 판정·설치 위치가 전부 이 규칙에 있어요.<br>새로운 사례를 만나면 프로그램 수정 없이 여기만 고치면 돼요.</p>
+    <textarea id="ta-rules" spellcheck="false"></textarea>
+    <div class="row-gap">
+      <button id="btn-rules-save" class="cta blue small">저장하고 다시 검색</button>
+      <button id="btn-rules-reset" class="cta gray small">기본값으로</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 로그 ===== -->
+<section id="view-log" class="view" hidden>
+  <div class="wrap">
+    <header class="top"><button class="back" data-go="home">‹</button><h2>📋 로그</h2></header>
+    <p class="guide">문제가 생기면 이 내용(또는 logs 폴더)을 관리자에게 보내주세요.</p>
+    <pre id="log-view"></pre>
+    <div class="row-gap">
+      <button id="btn-log-refresh" class="cta gray small">새로고침</button>
+      <button id="btn-log-folder" class="cta gray small">로그 폴더 열기</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 정보 ===== -->
+<section id="view-about" class="view" hidden>
+  <div class="wrap">
+    <header class="top"><button class="back" data-go="home">‹</button><h2>ℹ 정보</h2></header>
+
+    <div class="about-card">
+      <div class="about-logo">🔐</div>
+      <div class="about-title">인증서 이사 도우미</div>
+      <div class="about-ver" id="about-ver">v-</div>
+      <div class="about-update" id="about-update">업데이트 확인 중…</div>
+    </div>
+
+    <div class="maker-card">
+      <img class="maker-logo" src="/assets/maker-logo.svg" alt="subnautica">
+      <div class="maker-info">
+        <div class="maker-by">made by <b>subnautica-kr</b> · 경상남도교육청</div>
+        <div class="maker-sub">경상남도교육청 소속 전산주무관 개인 제작</div>
+      </div>
+    </div>
+    <p class="disclaimer">※ 경상남도교육청의 공식 프로그램이 아닙니다. 기관의 개발·지원·보증과 무관하며,
+      한 직원이 업무 편의를 위해 개인적으로 만들어 나누는 도구입니다.</p>
+
+    <h3 class="sub-h">변경 이력</h3>
+    <pre id="about-changelog" class="changelog"></pre>
+
+    <h3 class="sub-h">라이선스</h3>
+    <p class="guide">CC BY-NC 4.0 · © 2026 subnautica-kr<br>출처를 표시하면 자유롭게 쓰고 고칠 수 있어요. 상업적 이용은 금지합니다.</p>
+  </div>
+</section>
+
+<!-- 모달 / 토스트 -->
+<div id="modal-back" class="modal-back" hidden>
+  <div class="modal">
+    <div id="modal-emoji" class="modal-emoji">✅</div>
+    <h3 id="modal-title"></h3>
+    <p id="modal-msg"></p>
+    <textarea id="modal-input" hidden></textarea>
+    <div class="modal-btns">
+      <button id="modal-cancel" class="cta gray small" hidden>취소</button>
+      <button id="modal-ok" class="cta blue small">확인</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<div id="busy" class="busy" hidden><div class="spinner"></div><p id="busy-msg">잠시만요…</p></div>
+
+<!-- 강제 업데이트 오버레이 (새 버전 있을 때만) -->
+<div id="force-update" class="force-update" hidden>
+  <div class="fu-card">
+    <div class="fu-emoji">🚀</div>
+    <h2 id="fu-title">새 버전을 설치합니다</h2>
+    <p id="fu-msg">최신 버전을 내려받아 자동으로 업데이트합니다.<br>잠시 후 창이 다시 열립니다.</p>
+    <div class="spinner" id="fu-spin"></div>
+    <button id="fu-manual" class="cta blue small" hidden>다운로드 페이지 열기</button>
+  </div>
+</div>
+
+<!-- 업데이트 확인 실패 시 구석 안내 -->
+<div id="check-note" class="check-note" hidden>최신버전 확인할 수 없음</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# 기본: 텍스트는 자동 판별, Windows 도구이므로 체크아웃 시 CRLF
+* text=auto eol=crlf
+
+# 바이너리 (줄바꿈 변환 금지 - 변환되면 파일이 깨짐)
+*.exe binary
+*.ico binary
+
+# 스크립트/문서는 텍스트
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.js  text eol=crlf
+*.css text eol=crlf
+*.html text eol=crlf
+*.json text eol=crlf
+*.md  text eol=crlf
+*.svg text eol=crlf
