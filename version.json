@@ -1,6 +1,6 @@
 {
-  "version": "2.9",
+  "version": "2.10",
   "date": "2026-07-23",
-  "notes": "인증서 목록 조밀화, 변경이력 카드, 로그 터미널풍, 창 폭 확장",
+  "notes": "깃허브 ZIP 다운로드 시 발생하던 실행 오류(WebView2 로드 실패) 해결 — 첫 실행 정상화",
   "download": "https://github.com/subnautica-kr/cert-migrator/releases/latest/download/cert-migrator.zip"
 }

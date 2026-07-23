@@ -11,16 +11,32 @@ using Microsoft.Web.WebView2.WinForms;
 static class Program {
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     static extern bool SetDllDirectory(string lpPathName);
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    static extern bool DeleteFile(string lpFileName);
     [DllImport("shell32.dll")]
     static extern int SetCurrentProcessExplicitAppUserModelID(string appID);
 
     static string BaseDir;
     static string LibDir;
 
+    // 깃허브 ZIP 다운로드 시 모든 파일에 붙는 "인터넷에서 받음" 표시(Zone.Identifier / MOTW)를
+    // 프로그램 폴더 전체에서 제거한다. 관리형 WebView2 DLL 이 이 표시 때문에 로드 거부되는 것을
+    // exe.config(loadFromRemoteSources)와 함께 이중으로 막고, 다음 실행부터 SmartScreen 경고도 사라진다.
+    // ADS 삭제라 원본 파일은 그대로. 삭제 실패(권한/읽기전용 매체)는 무시 — config 가 최종 안전망.
+    static void UnblockFolder(string dir) {
+        try {
+            foreach (string f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories)) {
+                try { DeleteFile(f + ":Zone.Identifier"); } catch {}
+            }
+        } catch {}
+    }
+
     [STAThread]
     static void Main() {
         BaseDir = AppDomain.CurrentDomain.BaseDirectory;
         LibDir = Path.Combine(BaseDir, "app", "lib");
+        // WebView2 어셈블리가 처음 로드(new MainForm())되기 전에 MOTW 표시부터 제거
+        UnblockFolder(BaseDir);
         // 네이티브 WebView2Loader.dll 을 app\lib 에서 찾도록
         SetDllDirectory(LibDir);
         // 관리형 WebView2 DLL 도 app\lib 에서 로드

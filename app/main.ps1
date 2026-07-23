@@ -15,7 +15,7 @@ try { [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityP
 # ------------------------------------------------------------
 #  경로/로그
 # ------------------------------------------------------------
-$script:AppVersion = '2.9'
+$script:AppVersion = '2.10'
 $script:AppDir  = $PSScriptRoot
 if ([string]::IsNullOrEmpty($script:AppDir)) { $script:AppDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
 $script:RootDir = Split-Path -Parent $script:AppDir
