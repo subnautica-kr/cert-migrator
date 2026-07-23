@@ -9,3 +9,6 @@ app/ui/assets/org-logo.png
 # 진단/임시
 진단결과.txt
 *.tmp
+
+# 빌드 생성물
+build/build.rsp
