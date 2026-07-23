@@ -15,7 +15,7 @@ try { [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityP
 # ------------------------------------------------------------
 #  경로/로그
 # ------------------------------------------------------------
-$script:AppVersion = '2.6'
+$script:AppVersion = '2.8'
 $script:AppDir  = $PSScriptRoot
 if ([string]::IsNullOrEmpty($script:AppDir)) { $script:AppDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
 $script:RootDir = Split-Path -Parent $script:AppDir
@@ -54,6 +54,10 @@ try {
     $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
     if ($os) { Write-Log ("OS: {0} (빌드 {1})" -f $os.Caption, $os.BuildNumber) }
     Write-Log ("PowerShell: {0} / 프로그램 위치: {1}" -f $PSVersionTable.PSVersion, $script:RootDir)
+    # 상주하는 호스트 exe의 PID (부모) - 자동 업데이트 때 종료 후 교체하기 위함
+    $script:HostPid = 0
+    try { $script:HostPid = [int](Get-CimInstance Win32_Process -Filter ("ProcessId=" + $PID) -ErrorAction SilentlyContinue).ParentProcessId } catch {}
+    Write-Log ("호스트 PID: {0}" -f $script:HostPid)
     $drv = @()
     foreach ($d in [System.IO.DriveInfo]::GetDrives()) {
         try { if ($d.IsReady) { $drv += ("{0}({1})" -f $d.Name.TrimEnd('\'), $d.DriveType) } } catch {}
@@ -109,8 +113,8 @@ $script:DefaultRulesJson = @'
     "백업파일이름": "인증서백업_{컴퓨터명}_{날짜}.zip"
   },
   "업데이트": {
-    "_설명": "확인URL은 GitHub에 올린 version.json의 raw 주소. 비워두면 업데이트 확인을 하지 않음.",
-    "확인URL": "https://raw.githubusercontent.com/subnautica-kr/cert-migrator/main/version.json"
+    "_설명": "GitHub 저장소의 최신 릴리스를 자동 확인·설치. '소유자/저장소' 형식. 비우면 확인 안 함. 교육청 방화벽이 CDN(raw)을 막아도 github.com·codeload는 열려 있어 이 방식으로 동작(curl/schannel 사용).",
+    "저장소": "subnautica-kr/cert-migrator"
   }
 }
 '@
@@ -742,24 +746,41 @@ function Invoke-Clean($ids) {
     return [PSCustomObject]@{ ok = $true; done = $done; fail = $fail }
 }
 
-# 자동 업데이트: GitHub 릴리스 zip을 받아 프로그램 폴더를 교체하고 재시작.
-# rules.json/memos.json(사용자 데이터)은 보존. 다운로드는 rules.json에 설정된 주소에서만.
+# GitHub 최신 태그 조회. 교육청 방화벽이 CDN(raw)을 막으므로, 열려 있는 github.com 의
+# tags.atom(XML) 을 curl(schannel)로 읽어 최신 태그를 파싱. (releases 웹 생성 불필요 - 태그 push만으로 동작)
+function Get-LatestRelease {
+    $repo = ''
+    try { $repo = ([string]$script:Rules.'업데이트'.'저장소').Trim() } catch {}
+    if ([string]::IsNullOrWhiteSpace($repo)) { return $null }
+    try {
+        $atom = & curl.exe -s --ssl-no-revoke -m 10 ("https://github.com/$repo/tags.atom") 2>$null
+        $atom = ($atom -join "`n")
+        $tag = $null
+        $m = [regex]::Match($atom, 'tag:github\.com,2008:Repository/\d+/([^<]+)')
+        if ($m.Success) { $tag = $m.Groups[1].Value }
+        else { $m2 = [regex]::Match($atom, '(?s)<entry>.*?<title>([^<]+)</title>'); if ($m2.Success) { $tag = $m2.Groups[1].Value.Trim() } }
+        if (-not [string]::IsNullOrWhiteSpace($tag)) {
+            $ver = ($tag -replace '^[vV]', '')
+            return [PSCustomObject]@{ Repo = $repo; Tag = $tag; Version = $ver; ZipUrl = "https://codeload.github.com/$repo/zip/refs/tags/$tag" }
+        }
+    } catch { Log-Exception "태그조회" $_ }
+    return $null
+}
+
+# 자동 업데이트: codeload 에서 태그 zip 을 받아 프로그램 폴더를 교체하고 재시작.
+# rules.json/memos.json(사용자 데이터)은 보존. 통신은 curl.exe(schannel)로 방화벽 통과.
 function Invoke-DoUpdate {
     try {
-        $u = ''
-        try { $u = [string]$script:Rules.'업데이트'.'확인URL' } catch {}
-        if ([string]::IsNullOrWhiteSpace($u)) { return [PSCustomObject]@{ ok = $false; error = '업데이트 주소가 설정되지 않았습니다.' } }
-        $r = Invoke-WebRequest -Uri $u -TimeoutSec 8 -UseBasicParsing
-        $info = $r.Content | ConvertFrom-Json
-        $dl = [string]$info.download
-        if ([string]::IsNullOrWhiteSpace($dl) -or $dl -notmatch '(?i)\.zip($|\?)') {
-            return [PSCustomObject]@{ ok = $false; error = '다운로드용 zip 주소가 없습니다.' }
-        }
-        Write-Log ("업데이트 다운로드 시작: " + $dl)
+        $rel = Get-LatestRelease
+        if ($rel -eq $null) { return [PSCustomObject]@{ ok = $false; error = '최신 릴리스를 찾지 못했습니다.' } }
+        Write-Log ("업데이트 다운로드 시작: " + $rel.ZipUrl)
         $tmp = Join-Path $env:TEMP ('certmove_upd_' + [System.Guid]::NewGuid().ToString('N'))
         New-Item -ItemType Directory -Path $tmp -Force | Out-Null
         $zip = Join-Path $tmp 'update.zip'
-        Invoke-WebRequest -Uri $dl -OutFile $zip -TimeoutSec 90 -UseBasicParsing
+        & curl.exe -s -L --ssl-no-revoke -m 120 -o $zip $rel.ZipUrl 2>$null
+        if (-not (Test-Path -LiteralPath $zip) -or (Get-Item -LiteralPath $zip).Length -lt 1000) {
+            return [PSCustomObject]@{ ok = $false; error = '다운로드 실패(네트워크).' }
+        }
         $ex = Join-Path $tmp 'x'
         [System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $ex)
 
@@ -777,21 +798,34 @@ function Invoke-DoUpdate {
         $pr = Join-Path $payload 'app\rules.json'
         if (Test-Path -LiteralPath $pr) { Remove-Item -LiteralPath $pr -Force -ErrorAction SilentlyContinue }
 
-        # 교체+재시작 담당 업데이터 스크립트 생성 (현재 프로세스 종료 후 실행)
+        # 교체+재시작 담당 업데이터 스크립트 생성.
+        # WebView2 호스트 exe는 상주하므로, 먼저 호스트를 종료해야 exe·dll을 덮어쓸 수 있음.
         $updater = Join-Path $tmp 'apply.ps1'
         $exe = Join-Path $script:RootDir '인증서 이사 도우미.exe'
+        $hpid = [int]$script:HostPid
         $uc = @"
-Start-Sleep -Seconds 2
+Start-Sleep -Seconds 1
+# 1) 상주 호스트 exe 종료 (창 닫힘)
+if ($hpid -gt 0) { try { Stop-Process -Id $hpid -Force -ErrorAction SilentlyContinue } catch {} }
+`$deadline = (Get-Date).AddSeconds(8)
+while ((Get-Date) -lt `$deadline) {
+  `$p = Get-Process -Id $hpid -ErrorAction SilentlyContinue
+  if (-not `$p) { break }
+  Start-Sleep -Milliseconds 200
+}
+Start-Sleep -Milliseconds 500
+# 2) 파일 교체 (사용자 데이터 rules.json/memos.json 은 payload에 없어 보존됨)
 `$src = '$payload'
 `$dst = '$($script:RootDir)'
 try { Copy-Item -Path (Join-Path `$src '*') -Destination `$dst -Recurse -Force -ErrorAction SilentlyContinue } catch {}
+# 3) 새 버전 실행
 if (Test-Path -LiteralPath '$exe') { Start-Process -FilePath '$exe' }
 Start-Sleep -Seconds 2
 Remove-Item -LiteralPath '$tmp' -Recurse -Force -ErrorAction SilentlyContinue
 "@
         [System.IO.File]::WriteAllText($updater, $uc, (New-Object System.Text.UTF8Encoding $true))
         Start-Process powershell.exe ('-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $updater + '"')
-        Write-Log ("업데이터 실행됨 (payload: {0}) -> 앱 종료 예정" -f $payload)
+        Write-Log ("업데이터 실행됨 (payload: {0}, hostPid: {1}) -> 호스트 종료·교체·재시작" -f $payload, $hpid)
         return [PSCustomObject]@{ ok = $true }
     } catch {
         Log-Exception "업데이트적용" $_
@@ -902,19 +936,23 @@ function Handle-Request($req, $stream) {
             return
         }
         '^/api/checkupdate$' {
-            $u = ''
-            try { $u = [string]$script:Rules.'업데이트'.'확인URL' } catch {}
-            if ([string]::IsNullOrWhiteSpace($u)) { Send-Json $stream @{ ok = $false; reason = 'nourl' }; return }
+            # 업데이트 확인은 프로그램 켤 때(화면 로드 시) 한 번만 호출됨. interval 체크 없음.
+            $repo = ''
+            try { $repo = ([string]$script:Rules.'업데이트'.'저장소').Trim() } catch {}
+            if ([string]::IsNullOrWhiteSpace($repo)) { Send-Json $stream @{ ok = $false; reason = 'nourl' }; return }
             try {
-                $r = Invoke-WebRequest -Uri $u -TimeoutSec 6 -UseBasicParsing
-                $info = $r.Content | ConvertFrom-Json
-                $latest = [string]$info.version
+                $rel = Get-LatestRelease
+                if ($rel -eq $null) {
+                    Write-Log "업데이트 확인: 최신 릴리스 없음 또는 조회 실패" 'WARN'
+                    Send-Json $stream @{ ok = $false; reason = 'network' }; return
+                }
+                $latest = $rel.Version
                 $hasUpd = $false
                 try { $hasUpd = ([version]$latest -gt [version]$script:AppVersion) } catch { $hasUpd = ($latest -ne $script:AppVersion -and $latest -ne '') }
-                Write-Log ("업데이트 확인: 현재 {0} / 최신 {1} / 새버전={2}" -f $script:AppVersion, $latest, $hasUpd)
-                Send-Json $stream @{ ok = $true; current = $script:AppVersion; latest = $latest; hasUpdate = $hasUpd; notes = [string]$info.notes; download = [string]$info.download }
+                Write-Log ("업데이트 확인: 현재 {0} / 최신 {1}(태그 {2}) / 새버전={3}" -f $script:AppVersion, $latest, $rel.Tag, $hasUpd)
+                Send-Json $stream @{ ok = $true; current = $script:AppVersion; latest = $latest; hasUpdate = $hasUpd; notes = ''; download = ('https://github.com/' + $repo + '/tags') }
             } catch {
-                Write-Log ("업데이트 확인 실패(네트워크): " + $_.Exception.Message) 'WARN'
+                Write-Log ("업데이트 확인 실패: " + $_.Exception.Message) 'WARN'
                 Send-Json $stream @{ ok = $false; reason = 'network' }
             }
             return
@@ -1006,16 +1044,23 @@ $port = ([System.Net.IPEndPoint]$listener.LocalEndpoint).Port
 $url = "http://127.0.0.1:$port/"
 Write-Log ("로컬 UI 서버 시작: " + $url)
 
-$edge = $null
-foreach ($p in @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe")) {
-    if ($p -and (Test-Path -LiteralPath $p)) { $edge = $p; break }
-}
-if ($edge) {
-    Start-Process $edge ("--app=$url --window-size=720,760")
-    Write-Log "Edge 앱모드로 UI 실행"
+# 호스트(WebView2 exe)가 실행했으면 URL을 파일로 넘기고 창은 exe가 띄움.
+# 그렇지 않으면(직접 실행 등) 예전처럼 Edge 앱모드로 띄움.
+if ($env:CERTMIG_URLFILE) {
+    try { [System.IO.File]::WriteAllText($env:CERTMIG_URLFILE, $url, (New-Object System.Text.UTF8Encoding $false)) } catch { Log-Exception "URL전달" $_ }
+    Write-Log ("URL을 호스트에 전달: " + $env:CERTMIG_URLFILE)
 } else {
-    Start-Process $url
-    Write-Log "기본 브라우저로 UI 실행 (Edge 못 찾음)" 'WARN'
+    $edge = $null
+    foreach ($p in @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe")) {
+        if ($p -and (Test-Path -LiteralPath $p)) { $edge = $p; break }
+    }
+    if ($edge) {
+        Start-Process $edge ("--app=$url --window-size=380,600")
+        Write-Log "Edge 앱모드로 UI 실행(호스트 없이 직접 실행)"
+    } else {
+        Start-Process $url
+        Write-Log "기본 브라우저로 UI 실행 (Edge 못 찾음)" 'WARN'
+    }
 }
 
 try {

@@ -4,6 +4,7 @@
 # 바이너리 (줄바꿈 변환 금지 - 변환되면 파일이 깨짐)
 *.exe binary
 *.ico binary
+*.dll binary
 
 # 스크립트/문서는 텍스트
 *.ps1 text eol=crlf

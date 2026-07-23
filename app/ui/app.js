@@ -420,7 +420,14 @@ async function checkUpdate() {
 
 function showCheckNote(show) {
   const n = $('#check-note');
-  if (n) n.hidden = !show;
+  if (!n) return;
+  if (!show) { n.hidden = true; return; }
+  n.hidden = false; n.classList.remove('fade');
+  // 4초 뒤 스르륵 사라짐 (거슬리지 않게)
+  setTimeout(() => {
+    n.classList.add('fade');
+    setTimeout(() => { n.hidden = true; }, 700);
+  }, 4000);
 }
 
 // 강제 업데이트: 화면을 덮고 자동으로 내려받아 교체·재시작

@@ -35,34 +35,34 @@ body {
 }
 button { font-family: inherit; border: 0; background: none; cursor: pointer; color: inherit; }
 .muted { color: var(--sub); }
-.wrap { max-width: 640px; margin: 0 auto; padding: 24px 20px 40px; }
-.view { min-height: 100vh; }
+.wrap { max-width: 600px; margin: 0 auto; padding: 16px 18px 24px; }
+.view { min-height: 0; }
 
 /* ===== 홈 ===== */
-.home-head { text-align: center; padding: 46px 0 30px; }
-.logo { font-size: 56px; line-height: 1; margin-bottom: 14px; }
-.home-head h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; }
-.home-head p { margin-top: 8px; font-size: 15px; }
+.home-head { text-align: center; padding: 20px 0 16px; }
+.logo { font-size: 40px; line-height: 1; margin-bottom: 8px; }
+.home-head h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+.home-head p { margin-top: 6px; font-size: 14px; }
 
-.menu { display: flex; flex-direction: column; gap: 14px; }
+.menu { display: flex; flex-direction: column; gap: 12px; }
 .menu-card {
-  display: flex; align-items: center; gap: 18px; text-align: left;
-  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
-  padding: 26px 24px; transition: transform .12s ease, box-shadow .12s ease;
+  display: flex; align-items: center; gap: 16px; text-align: left;
+  background: var(--card); border-radius: 16px; box-shadow: var(--shadow);
+  padding: 18px 20px; transition: transform .12s ease, box-shadow .12s ease;
 }
 .menu-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(25,31,40,.10); }
 .menu-card:active { transform: scale(.985); }
-.mc-emoji { font-size: 38px; }
-.mc-text { flex: 1; display: flex; flex-direction: column; gap: 3px; position: relative; }
-.mc-title { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
-.mc-sub { font-size: 14px; color: var(--sub); }
-.mc-arrow { font-size: 30px; color: #C9CED6; font-weight: 300; }
+.mc-emoji { font-size: 32px; }
+.mc-text { flex: 1; display: flex; flex-direction: column; gap: 2px; position: relative; }
+.mc-title { font-size: 18px; font-weight: 700; letter-spacing: -.3px; }
+.mc-sub { font-size: 13px; color: var(--sub); }
+.mc-arrow { font-size: 28px; color: #C9CED6; font-weight: 300; }
 .mc-badge {
   position: absolute; top: -4px; right: 0;
   background: var(--red); color: #fff; font-size: 12px; font-weight: 700;
   border-radius: 999px; padding: 3px 10px;
 }
-.home-foot { text-align: center; margin-top: 34px; font-size: 14px; color: var(--sub); }
+.home-foot { text-align: center; margin-top: 20px; font-size: 14px; color: var(--sub); }
 .home-foot .dot { margin: 0 8px; color: #C9CED6; }
 .link { color: var(--sub); font-size: 14px; text-decoration: none; }
 .link:hover { color: var(--blue); }
@@ -239,6 +239,33 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; col
   font-size: 14px; color: #B45309; font-weight: 600;
 }
 .update-banner .cta.small { flex: none; }
+
+/* 업데이트 확인 불가 시 아주 작게 잠깐만 (오른쪽 위, 4초 후 사라짐) */
+.check-note {
+  position: fixed; right: 10px; top: 10px; z-index: 6;
+  font-size: 10.5px; color: #AEB4BE;
+  background: rgba(255,255,255,.92); border: 1px solid var(--line);
+  padding: 3px 9px; border-radius: 999px; pointer-events: none;
+  max-width: 60vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  opacity: 1; transition: opacity .6s ease;
+}
+.check-note.fade { opacity: 0; }
+
+/* 강제 업데이트 오버레이 */
+.force-update {
+  position: fixed; inset: 0; z-index: 80; padding: 24px;
+  background: rgba(15,23,42,.6);
+  display: flex; align-items: center; justify-content: center;
+}
+.fu-card {
+  background: var(--card); border-radius: 22px; padding: 30px 26px; text-align: center;
+  width: 100%; max-width: 360px; box-shadow: 0 20px 50px rgba(0,0,0,.3);
+}
+.fu-emoji { font-size: 44px; }
+.fu-card h2 { font-size: 19px; font-weight: 800; margin: 8px 0 8px; letter-spacing: -.3px; }
+.fu-card p { font-size: 14px; color: var(--sub); line-height: 1.55; }
+.fu-card .spinner { margin: 18px auto 0; }
+.fu-card .cta { margin-top: 16px; }
 
 .busy {
   position: fixed; inset: 0; background: rgba(242,244,248,.75);
