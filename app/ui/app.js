@@ -112,16 +112,19 @@ function chip(text, cls) { return `<span class="chip ${cls}">${esc(text)}</span>
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 function certChips(c) {
-  let h = chip(c.type, c.type.toLowerCase());
-  h += chip(c.ca, 'gray');
+  let h = '';
+  // 발급기관 이름에 종류(GPKI/EPKI)가 이미 드러나면 종류 칩은 생략(중복 방지)
+  if (!(c.ca && c.type && c.ca.indexOf(c.type) >= 0)) h += chip(c.type, c.type.toLowerCase());
+  h += chip(c.ca, c.type ? c.type.toLowerCase() : 'gray');
   if (c.purpose) h += chip(c.purpose, 'info');
-  if (c.expire) {
-    if (c.expireDays < 0) h += chip('만료됨 ' + c.expire, 'bad');
-    else if (c.expireDays < 30) h += chip('곧 만료 ' + c.expire, 'warn');
-    else h += chip('만료 ' + c.expire, 'ok');
-  }
-  if (c.status === '중복') h += chip('다른 위치에 복사본', 'warn');
+  if (c.status === '중복') h += chip('중복', 'warn');
   return h;
+}
+function expiryChip(c) {
+  if (!c.expire) return '';
+  if (c.expireDays < 0) return chip('만료됨 ' + c.expire, 'bad');
+  if (c.expireDays < 30) return chip('곧만료 ' + c.expire, 'warn');
+  return chip('~' + c.expire, 'ok');
 }
 
 function renderCerts() {
@@ -136,12 +139,12 @@ function renderCerts() {
     <div class="item" data-cid="${c.id}">
       <div class="tick">✓</div>
       <div class="body">
-        <div class="name">${esc(c.name)}</div>
+        <div class="row1"><span class="name">${esc(c.name)}</span>${expiryChip(c)}</div>
         <div class="chips">${certChips(c)}</div>
         ${c.memo ? `<div class="memo">📝 ${esc(c.memo)}</div>` : ''}
         <div class="path">${esc(c.folder)}</div>
       </div>
-      <button class="memo-btn" data-memo="${c.id}">✏ 메모</button>
+      <button class="memo-btn" data-memo="${c.id}">✏</button>
     </div>`).join('');
 
   box.querySelectorAll('.item').forEach(el => {
@@ -385,7 +388,7 @@ async function loadAbout() {
   try {
     const a = await api('/api/about');
     $('#about-ver').textContent = 'v' + a.version;
-    $('#about-changelog').textContent = a.changelog || '(변경 이력을 불러오지 못했습니다)';
+    renderChangelog(a.changelog);
   } catch (e) {}
   // 정보 화면의 상태 줄은 홈에서 이미 확인한 결과를 반영
   const box = $('#about-update');
@@ -393,6 +396,41 @@ async function loadAbout() {
   else if (UPDATE_STATE === 'cannot') { box.classList.remove('has'); box.textContent = '최신버전 확인할 수 없음'; }
   else if (UPDATE_STATE === 'updating') { box.classList.add('has'); box.textContent = '업데이트 중…'; }
   else { box.textContent = '확인 중…'; }
+}
+
+// 변경이력 마크다운을 버전 카드로 렌더링
+function renderChangelog(md) {
+  const box = $('#about-changelog');
+  if (!md) { box.textContent = '(변경 이력을 불러오지 못했습니다)'; return; }
+  const lines = md.split(/\r?\n/);
+  let html = '', inList = false, verOpen = false, first = true;
+  const closeList = () => { if (inList) { html += '</ul>'; inList = false; } };
+  const closeVer = () => { closeList(); if (verOpen) { html += '</div>'; verOpen = false; } };
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, '');
+    let m;
+    if (/^#\s/.test(line)) continue;                       // 최상단 제목 무시
+    if ((m = line.match(/^##\s+(\S+)\s*(?:\(([^)]*)\))?/))) { // 버전 헤더
+      closeVer();
+      html += '<div class="cl-ver"><div class="cl-head">';
+      html += '<span class="cl-badge' + (first ? ' latest' : '') + '">' + esc(m[1]) + '</span>';
+      if (m[2]) html += '<span class="cl-date">' + esc(m[2]) + '</span>';
+      if (first) html += '<span class="cl-new">최신</span>';
+      html += '</div>';
+      verOpen = true; first = false;
+      continue;
+    }
+    if ((m = line.match(/^\s*-\s+(.*)/))) {                 // 항목
+      if (!inList) { html += '<ul class="cl-list">'; inList = true; }
+      html += '<li>' + esc(m[1]) + '</li>';
+      continue;
+    }
+    if (line.trim() && inList) {                            // 이어지는 설명줄 → 앞 항목에 붙임
+      html = html.replace(/<\/li>$/, ' ' + esc(line.trim()) + '</li>');
+    }
+  }
+  closeVer();
+  box.innerHTML = html || '(변경 이력이 비어 있습니다)';
 }
 
 let UPDATE_INFO = null;

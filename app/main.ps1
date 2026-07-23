@@ -15,7 +15,7 @@ try { [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityP
 # ------------------------------------------------------------
 #  경로/로그
 # ------------------------------------------------------------
-$script:AppVersion = '2.8'
+$script:AppVersion = '2.9'
 $script:AppDir  = $PSScriptRoot
 if ([string]::IsNullOrEmpty($script:AppDir)) { $script:AppDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
 $script:RootDir = Split-Path -Parent $script:AppDir
@@ -1055,7 +1055,7 @@ if ($env:CERTMIG_URLFILE) {
         if ($p -and (Test-Path -LiteralPath $p)) { $edge = $p; break }
     }
     if ($edge) {
-        Start-Process $edge ("--app=$url --window-size=380,600")
+        Start-Process $edge ("--app=$url --window-size=1080,660")
         Write-Log "Edge 앱모드로 UI 실행(호스트 없이 직접 실행)"
     } else {
         Start-Process $url

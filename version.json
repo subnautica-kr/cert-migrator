@@ -1,6 +1,6 @@
-﻿{
-  "version": "2.7",
-  "date": "2026-07-22",
-  "notes": "화면 여백·불필요한 스크롤 정리, 창 크기 축소, 업데이트 안내 문구 정리",
+{
+  "version": "2.9",
+  "date": "2026-07-23",
+  "notes": "인증서 목록 조밀화, 변경이력 카드, 로그 터미널풍, 창 폭 확장",
   "download": "https://github.com/subnautica-kr/cert-migrator/releases/latest/download/cert-migrator.zip"
 }
